@@ -60,7 +60,6 @@ def insert(request):
         with open(os.path.join(DATA_DIR, 'hr.json'),'r+') as hrjson:
             hrjson.write(str(hr))
 
-
         with open(os.path.join(DATA_DIR, 'pulse.json'),'r+') as pulsejson:
             pulsejson.write(str(pulse))
 
