@@ -76,14 +76,14 @@ def is_pos_def(A):
         return False
     
     
-def main(namefile, data_test_value):
+def main(namefile):
     headers = ['date','abpmean','hr','pulse','resp','spo2','label']
     dataset = pd.read_csv(MEDIA_ROOT+'/'+namefile,names=headers)
     # dataset = dataset.drop(dataset.columns[0], axis=1)
     dataset.label = pd.factorize(dataset.label)[0]
     X = dataset.iloc[:, 1:6]
     y = dataset.label
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= data_test_value, random_state=0)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.02, random_state=0)
     sc = MinMaxScaler(feature_range=(0, 1))
     X_train = sc.fit_transform(X_train)
     X_test = sc.transform(X_test)
@@ -118,6 +118,7 @@ def main(namefile, data_test_value):
     anomaly['Mob_dist']= dist_test
     anomaly['Thresh'] = threshold
     # If Mob dist above threshold: Flag as anomaly
-    anomaly['Anomaly'] = anomaly['Mob_dist'] > anomaly['Thresh']        
+    anomaly['Anomaly'] = anomaly['Mob_dist'] > anomaly['Thresh']
+    # print("==========================")
     return anomaly
     

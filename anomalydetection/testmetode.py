@@ -20,8 +20,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
 
-from anomalydetection.settings import MEDIA_ROOT
-
 # Calculate the covariance matrix
 def cov_matrix(data, verbose=False):
     covariance_matrix = np.cov(data, rowvar=False)
@@ -76,48 +74,50 @@ def is_pos_def(A):
         return False
     
     
-def main(namefile, data_test_value):
-    headers = ['date','abpmean','hr','pulse','resp','spo2','label']
-    dataset = pd.read_csv(MEDIA_ROOT+'/'+namefile,names=headers)
-    # dataset = dataset.drop(dataset.columns[0], axis=1)
-    dataset.label = pd.factorize(dataset.label)[0]
-    X = dataset.iloc[:, 1:6]
-    y = dataset.label
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size= data_test_value, random_state=0)
-    sc = MinMaxScaler(feature_range=(0, 1))
-    X_train = sc.fit_transform(X_train)
-    X_test = sc.transform(X_test)
-    pca = PCA(n_components=2)
-    principalComponents_Xtrain = pca.fit_transform(X_train)
-    principalComponents_Xtest = pca.transform(X_test)
-    principalDf = pd.DataFrame(data = principalComponents_Xtrain, columns = ['principal component 1', 'principal component 2'])
 
-    # Set up PCA model
-    data_train = np.array(principalComponents_Xtrain)
-    data_test = np.array(principalComponents_Xtest)
+headers = ['date','abpmean','hr','pulse','resp','spo2','label']
+dataset = pd.read_csv('dataset1.csv',names=headers)
+# dataset = dataset.drop(dataset.columns[0], axis=1)
+dataset.label = pd.factorize(dataset.label)[0]
+X = dataset.iloc[:, 1:6]
+y = dataset.label
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.01, random_state=1)
+sc = MinMaxScaler(feature_range=(0, 1))
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+pca = PCA(n_components=2)
+principalComponents_Xtrain = pca.fit_transform(X_train)
+principalComponents_Xtest = pca.transform(X_test)
+principalDf = pd.DataFrame(data = principalComponents_Xtrain, columns = ['principal component 1', 'principal component 2'])
 
-    # Calculate the covariance matrix and its inverse, based on data in the training set
-    cv_matrix, inv_cov_matrix  = cov_matrix(data_train)
+# Set up PCA model
+data_train = np.array(principalComponents_Xtrain)
+data_test = np.array(principalComponents_Xtest)
 
-    # calculate the mean value for the input variables in the training set
-    mean_distr = data_train.mean(axis=0)
+# Calculate the covariance matrix and its inverse, based on data in the training set
+cov_matrix, inv_cov_matrix  = cov_matrix(data_train)
 
-    # calculate the Mahalanobis distance for the datapoints in the test set, and compare that with the anomaly threshold
-    dist_test = MahalanobisDist(inv_cov_matrix, mean_distr, data_test, verbose=False)
-    dist_train = MahalanobisDist(inv_cov_matrix, mean_distr, data_train, verbose=False)
-    threshold = MD_threshold(dist_train, extreme = True)
+# calculate the mean value for the input variables in the training set
+mean_distr = data_train.mean(axis=0)
 
-    # well as the threshold value and “anomaly flag” variable for both train and test data in a dataframe
-    anomaly_train = pd.DataFrame()
-    anomaly_train['Mob dist']= dist_train
-    anomaly_train['Thresh'] = threshold
-    # If Mob dist above threshold: Flag as anomaly
-    anomaly_train['Anomaly'] = anomaly_train['Mob dist'] > anomaly_train['Thresh']
-    # anomaly_train = data_train
-    anomaly = pd.DataFrame()
-    anomaly['Mob_dist']= dist_test
-    anomaly['Thresh'] = threshold
-    # If Mob dist above threshold: Flag as anomaly
-    anomaly['Anomaly'] = anomaly['Mob_dist'] > anomaly['Thresh']        
-    return anomaly
+# calculate the Mahalanobis distance for the datapoints in the test set, and compare that with the anomaly threshold
+dist_test = MahalanobisDist(inv_cov_matrix, mean_distr, data_test, verbose=False)
+dist_train = MahalanobisDist(inv_cov_matrix, mean_distr, data_train, verbose=False)
+threshold = MD_threshold(dist_train, extreme = True)
+
+# well as the threshold value and “anomaly flag” variable for both train and test data in a dataframe
+anomaly_train = pd.DataFrame()
+anomaly_train['Mob dist']= dist_train
+anomaly_train['Thresh'] = threshold
+# If Mob dist above threshold: Flag as anomaly
+anomaly_train['Anomaly'] = anomaly_train['Mob dist'] > anomaly_train['Thresh']
+# anomaly_train = data_train
+
+anomaly = pd.DataFrame()
+anomaly['Mob dist']= dist_test
+anomaly['Thresh'] = threshold
+# If Mob dist above threshold: Flag as anomaly
+anomaly['Anomaly'] = anomaly['Mob dist'] > anomaly['Thresh']
+# print("==========================")
+return anomaly
     

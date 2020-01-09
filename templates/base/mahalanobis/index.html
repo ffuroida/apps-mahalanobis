@@ -1,72 +1,73 @@
 {% extends "partial/base.html" %}
 
 {% block header %}
-    <h2><span>Mahalanobis</span> Distance</h2>
+<h2><span>Mahalanobis</span> Distance</h2>
 {% endblock header %}
 
 {% block tittle-nav %}
-    <p>metode statistik untuk deteksi anomaly</p>                           
+<p>metode statistik untuk deteksi anomaly</p>
 {% endblock tittle-nav %}
 
 {% block content %}
-    <p>Mahalanobis Distance yang merupakan generalisasi dari Eucledian Distance yang distandarisasi, dan mempertimbangkan unsur keragaman (varians) yang tepat digunakan ketika variabel terinkorelasi baik positif maupun negatif, karena menyesuaikan interkorelasi (Mahalanobis, 1936)</p>
+<p>Mahalanobis Distance yang merupakan generalisasi dari Eucledian Distance yang distandarisasi, dan mempertimbangkan
+    unsur keragaman (varians) yang tepat digunakan ketika variabel terinkorelasi baik positif maupun negatif, karena
+    menyesuaikan interkorelasi (Mahalanobis, 1936)</p>
 {% endblock content %}
 
 {% block content-form %}
-    <!-- <form method="POST" enctype="multipart/form-data">
+<!-- <form method="POST" enctype="multipart/form-data">
     {% csrf_token %} -->
-    <!-- <input type="text" name="nama"> -->
-    <!-- {{ form.as_table}}
+<!-- <input type="text" name="nama"> -->
+<!-- {{ form.as_table}}
     <button type="submit" > submit</button>
     </form>                        -->
 
-      
-    <form action="" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <input type="file" name="docfile" id="docfile">
-        <br>
-        <button type="submit">Submit</button>
-    </form>
-  
-    <br><br><br>
-    <div class="table100 ver1 m-b-110">
-        <div class="table100-head">
-            <table>
-                <thead>
-                    <tr class="row100 head">
-                        <th class="cell100 column1">Time</th>
-                        <th class="cell100 column2">ABPmean</th>
-                        <th class="cell100 column3">Pulse</th>
-                        <th class="cell100 column4">HR</th>
-                        <th class="cell100 column5">Respirasi</th>
-                        <th class="cell100 column6">SPO2</th>
-                        <th class="cell100 column7">Class</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" name="docfile" id="docfile"> <input type="number" min="1" max="8" name="data_test_value" required>
+    <br>
+    <button type="submit">Submit</button>
+</form>
 
-        <div class="table100-body js-pscroll">
-            <table>
-                <tbody>
-                        {% for display in data_table %}
-                        <tr>
-                            <td>{{ display.s1 }}</td>
-                            <td>{{ display.s2 }}</td>
-                            <td>{{ display.s3 }}</td>
-                            <td>{{ display.s4 }}</td>
-                            <td>{{ display.s5 }}</td>
-                            <td>{{ display.s6 }}</td>
-                            <td>{{ display.s7  }}</td>
-                        </tr>
-                        {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<br><br><br>
+<div class="table100 ver1 m-b-110">
+    <div class="table100-head">
+        <table>
+            <thead>
+                <tr class="row100 head">
+                    <th class="cell100 column1">Time</th>
+                    <th class="cell100 column2">ABPmean</th>
+                    <th class="cell100 column3">Pulse</th>
+                    <th class="cell100 column4">HR</th>
+                    <th class="cell100 column5">Respirasi</th>
+                    <th class="cell100 column6">SPO2</th>
+                    <th class="cell100 column7">Class</th>
+                </tr>
+            </thead>
+        </table>
     </div>
 
-    <!-- {{ data }} -->
-    {{ times }}
+    <div class="table100-body js-pscroll">
+        <table>
+            <tbody>
+                {% for display in data_table %}
+                <tr>
+                    <td>{{ display.s1 }}</td>
+                    <td>{{ display.s2 }}</td>
+                    <td>{{ display.s3 }}</td>
+                    <td>{{ display.s4 }}</td>
+                    <td>{{ display.s5 }}</td>
+                    <td>{{ display.s6 }}</td>
+                    <td>{{ display.s7  }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- {{ data }} -->
+{{ times }}
 {% endblock content-form%}
 
 {% block content-chart %}
@@ -75,97 +76,111 @@
 <script src="https://code.highcharts.com/stock/modules/data.js"></script>
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
-
 <div id="container" style="height: 400px; min-width: 310px"></div> -->
 
+{{ data_final | safe }}
 
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
 <div id="container" style="height: 400px; min-width: 310px"></div>
+<hr>
+<div id="container2" style="height: 400px; min-width: 310px"></div>
 
 <script>
     var seriesOptions = [],
-    seriesCounter = 0,
-    names = ['ABPMEAN', 'HR', 'PULSE', 'RESP', 'SPO2'];
+        seriesCounter = 0,
+        names = ['THRESH', 'MOB_DIST'];
 
-/**
- * Create the chart when all data is loaded
- * @returns {undefined}
- */
- function createChart() {
+    /**
+     * Create the chart when all data is loaded
+     * @returns {undefined}
+     */
+    function createChart() {
 
-Highcharts.stockChart('container', {
+        Highcharts.stockChart('container', {
+            title: {
+                text: 'Data Anomaly'
+            },
 
-  rangeSelector: {
-    selected: 4
-  },
+            subtitle: {
+                text: 'Source: data test {{ data_percentage_test }}%'
+            },
 
-  yAxis: {
-    labels: {
-      formatter: function () {
-        return this.value ;
-      }
-    },
-    plotLines: [{
-      value: 0,
-      width: 2,
-      color: 'silver'
-    }]
-  },
+            chart: {
+                zoomType: null
+            },
 
-  plotOptions: {
-    series: {
-      showInNavigator: true
+            rangeSelector: {
+                selected: 0,
+                inputEnabled: false
+
+            },
+            xAxis: {
+                labels: {
+                    enabled: true,
+                    formatter: function() { return this.value;},
+                },
+                plotLines: [
+                    {% for data in data_anomaly %}
+                        {% if data.anomaly == False %}
+                            {
+                                value: {{ data.index }},
+                                width:1,
+                                color: 'red',                                
+                            },
+                        {% endif %}
+                    {% endfor %}
+                ],               
+            },
+            yAxis: {
+                labels: {
+                    formatter: function () {
+                        return this.value;
+                    }
+                },                
+            },
+
+            plotOptions: {
+                series: {
+                    showInNavigator: true
+                }
+            },
+
+            tooltip: {
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+                valueDecimals: 2,
+                split: true
+            },
+
+            series: seriesOptions
+        });
     }
-  },
 
-  tooltip: {
-    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
-    valueDecimals: 2,
-    split: true
-  },
+    function success(data) {
+        var name = this.url.match(/(thresh|mob_dist)/)[0].toUpperCase();
+        var i = names.indexOf(name);
+        seriesOptions[i] = {
+            name: name,
+            data: data
+        };
 
-  series: seriesOptions
-});
-}
+        // As we're loading the data asynchronously, we don't know what order it
+        // will arrive. So we keep a counter and create the chart when all the data is loaded.
+        seriesCounter += 1;
 
-function success(data) {
-    var name = this.url.match(/(abpmean|hr|pulse|resp|spo2)/)[0].toUpperCase();
-    var i = names.indexOf(name);
-    seriesOptions[i] = {
-        name: name,
-        data: data
-    };
-
-    // As we're loading the data asynchronously, we don't know what order it
-    // will arrive. So we keep a counter and create the chart when all the data is loaded.
-    seriesCounter += 1;
-
-    if (seriesCounter === names.length) {
-        createChart();
+        if (seriesCounter === names.length) {
+            createChart();
+        }
     }
-}
 
-Highcharts.getJSON(
-    '{% static "assets/data/abpmean.json" %}',
-    success
-);
-Highcharts.getJSON(
-    '{% static "assets/data/hr.json" %}',
-    success
-);
-Highcharts.getJSON(
-    '{% static "assets/data/pulse.json" %}',
-    success
-);
-Highcharts.getJSON(
-    '{% static "assets/data/resp.json" %}',
-    success
-);
-Highcharts.getJSON(
-    '{% static "assets/data/spo2.json" %}',
-    success
-);
-</script> 
+    Highcharts.getJSON(
+        '{% static "assets/data/thresh.json" %}',
+        success
+    );
+    Highcharts.getJSON(
+        '{% static "assets/data/mob_dist.json" %}',
+        success
+    );  
+</script>
 {% endblock content-chart %}

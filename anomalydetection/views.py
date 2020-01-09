@@ -1,13 +1,13 @@
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.conf import settings
 from anomalydetection.forms.views import MahalanobisCreateForm
 import json, csv, re, time, os
 from datetime import datetime
-from anomalydetection.settings import DATA_DIR
+from anomalydetection.settings import DATA_DIR, MEDIA_ROOT
+from django.core.files.storage import FileSystemStorage
 
-
-#method view
-
+from anomalydetection.mahalanobis import main
 # def index(request):
 
 #     if request.method == "POST":
@@ -33,8 +33,38 @@ def insert(request):
     pulse = []
     resp = []
     spo2 = []
+    thresh = []
+    data_anomaly = []
+    anomaly = []
+    mob_dist = []    
+    data_test_value = 0
+    final_data = []
 
-    if request.method == 'POST':        
+    if request.method == 'POST' and request.FILES['docfile']:        
+        fs = FileSystemStorage()        
+        myfile = request.FILES['docfile']
+        data_test_value = request.POST['data_test_value']
+        data_test_value = float("0."+str(data_test_value))
+        try:
+            os.remove(os.path.join(MEDIA_ROOT, myfile.name))
+        except:
+            pass
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)           
+        final_data = main(myfile.name, data_test_value)    
+        
+        for loop, data in enumerate(final_data.Anomaly):
+            anomaly.append([loop, 1 if data is True else 0])   
+            data_anomaly.append({"index":loop,"anomaly":data})   
+                
+        for loop, data in enumerate(final_data.Thresh):
+            thresh.append([loop, data])
+            
+        for loop, data in enumerate(final_data.Mob_dist):
+            mob_dist.append([loop, data])                        
+            # print(loop, data)
+            
         for row in request.FILES['docfile']:
             data = str(row)                        
             data = data.strip("b'")
@@ -53,6 +83,13 @@ def insert(request):
             pulse.append([int(times), float(data[3])])
             resp.append([int(times), float(data[4])])
             spo2.append([int(times), float(data[5])])
+                    
+        
+        with open(os.path.join(DATA_DIR, 'mob_dist.json'),'r+') as mob_distjson:
+            mob_distjson.write(str(mob_dist))
+            
+        with open(os.path.join(DATA_DIR, 'thresh.json'),'r+') as threshjson:
+            threshjson.write(str(thresh))
         
         with open(os.path.join(DATA_DIR, 'abpmean.json'),'r+') as abpmeanjson:
             abpmeanjson.write(str(abpmean))
@@ -68,10 +105,24 @@ def insert(request):
 
         with open(os.path.join(DATA_DIR, 'spo2.json'),'r+') as spo2json:
             spo2json.write(str(spo2))
-        
-        
-
+            
+        with open(os.path.join(DATA_DIR, 'anomaly.json'),'r+') as anomalyjson:
+            anomalyjson.write(str(anomaly))
         # return render(request, 'base/mahalanobis/chart.html')     
-
-    return render(request, 'base/mahalanobis/index.html', {'data':str(abpmean), 'data_table':datay})     
+    else:
+        open(os.path.join(DATA_DIR, 'mob_dist.json'),'w').close()
+        open(os.path.join(DATA_DIR, 'thresh.json'),'w').close()
+        open(os.path.join(DATA_DIR, 'abpmean.json'),'w').close()
+        open(os.path.join(DATA_DIR, 'hr.json'),'w').close()
+        open(os.path.join(DATA_DIR, 'pulse.json'),'w').close()
+        open(os.path.join(DATA_DIR, 'resp.json'),'w').close()
+        open(os.path.join(DATA_DIR, 'spo2.json'),'w').close()
+        open(os.path.join(DATA_DIR, 'anomaly.json'),'w').close()
+        
+        print("++AA++A")     
+    return render(request, 'base/mahalanobis/index.html', {'data':str(abpmean), 
+                                                           'data_table':datay,
+                                                           'data_percentage_test': data_test_value,
+                                                           'data_anomaly': data_anomaly,
+                                                           'data_final': final_data.to_html(classes= 'table table-responsive table-bordered table-stripped')})
             
