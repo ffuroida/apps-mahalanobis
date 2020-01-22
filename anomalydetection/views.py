@@ -52,17 +52,17 @@ def insert(request):
         fs = FileSystemStorage()
         filename = fs.save(myfile.name, myfile)
         uploaded_file_url = fs.url(filename)           
-        final_data = main(myfile.name, data_test_value)    
+        final_data = main(myfile.name, data_test_value)                     
         
-        for loop, data in enumerate(final_data.Anomaly):
-            anomaly.append([loop, 1 if data is True else 0])   
-            data_anomaly.append({"index":loop,"anomaly":data})   
-                
-        for loop, data in enumerate(final_data.Thresh):
-            thresh.append([loop, data])
+        for index, data in zip(final_data.Timeseries, final_data.Anomaly):
+            anomaly.append([index, 1 if data is True else 0])   
+            data_anomaly.append({"index":index,"anomaly":data})                           
+       
+        for index, data in zip(final_data.Timeseries, final_data.Thresh):
+            thresh.append([index, data])
             
-        for loop, data in enumerate(final_data.Mob_dist):
-            mob_dist.append([loop, data])                        
+        for index, data in zip(final_data.Timeseries, final_data.Mob_dist):
+            mob_dist.append([index, data])                        
             # print(loop, data)
             
         for row in request.FILES['docfile']:
@@ -108,7 +108,14 @@ def insert(request):
             
         with open(os.path.join(DATA_DIR, 'anomaly.json'),'r+') as anomalyjson:
             anomalyjson.write(str(anomaly))
-        # return render(request, 'base/mahalanobis/chart.html')     
+        # return render(request, 'base/mahalanobis/chart.html')
+        
+        return render(request, 'base/mahalanobis/index.html', {'data':str(abpmean), 
+                                                           'data_table':datay,
+                                                           'data_percentage_test': data_test_value,
+                                                           'data_anomaly': data_anomaly,
+                                                           'data_final': final_data.to_html(classes= 'table table-responsive table-bordered table-stripped')})
+             
     else:
         open(os.path.join(DATA_DIR, 'mob_dist.json'),'w').close()
         open(os.path.join(DATA_DIR, 'thresh.json'),'w').close()
@@ -118,11 +125,10 @@ def insert(request):
         open(os.path.join(DATA_DIR, 'resp.json'),'w').close()
         open(os.path.join(DATA_DIR, 'spo2.json'),'w').close()
         open(os.path.join(DATA_DIR, 'anomaly.json'),'w').close()
-        
-        print("++AA++A")     
-    return render(request, 'base/mahalanobis/index.html', {'data':str(abpmean), 
-                                                           'data_table':datay,
-                                                           'data_percentage_test': data_test_value,
-                                                           'data_anomaly': data_anomaly,
-                                                           'data_final': final_data.to_html(classes= 'table table-responsive table-bordered table-stripped')})
+                    
+        return render(request, 'base/mahalanobis/index.html', {'data':str(abpmean), 
+                                                            'data_table':datay,
+                                                            'data_percentage_test': data_test_value,
+                                                            'data_anomaly': data_anomaly,
+                                                            'data_final': final_data})
             

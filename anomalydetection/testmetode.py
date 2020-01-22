@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import numpy as np
+import datetime, time
 from sklearn import preprocessing
 # import seaborn as sns
 # sns.set(color_codes=True)
@@ -78,13 +79,26 @@ def is_pos_def(A):
 headers = ['date','abpmean','hr','pulse','resp','spo2','label']
 dataset = pd.read_csv('dataset1.csv',names=headers)
 # dataset = dataset.drop(dataset.columns[0], axis=1)
+xmin = []
+for loop, data in enumerate(dataset.date):
+    timeseries = time.mktime(datetime.datetime.strptime(str(data.replace("'","")), "%H:%M:%S %d/%m/%Y").timetuple())
+    dataset.date[loop] = str(timeseries)
+    # print(timeseries)
+    
 dataset.label = pd.factorize(dataset.label)[0]
-X = dataset.iloc[:, 1:6]
+X = dataset.iloc[:, 0:6]
 y = dataset.label
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.01, random_state=1)
 sc = MinMaxScaler(feature_range=(0, 1))
+X_train_temp = X_train
+X_test_temp = X_test
+
+X_trains = X_train.drop('date', 1)
+X_tests = X_test.drop('date', 1)
+
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
+
 pca = PCA(n_components=2)
 principalComponents_Xtrain = pca.fit_transform(X_train)
 principalComponents_Xtest = pca.transform(X_test)
@@ -116,8 +130,11 @@ anomaly_train['Anomaly'] = anomaly_train['Mob dist'] > anomaly_train['Thresh']
 anomaly = pd.DataFrame()
 anomaly['Mob dist']= dist_test
 anomaly['Thresh'] = threshold
+anomaly['Timeseries'] = threshold
+for loop, data in enumerate(X_test_temp.date):
+    anomaly['Timeseries'][loop] = data
 # If Mob dist above threshold: Flag as anomaly
 anomaly['Anomaly'] = anomaly['Mob dist'] > anomaly['Thresh']
 # print("==========================")
-return anomaly
+
     
