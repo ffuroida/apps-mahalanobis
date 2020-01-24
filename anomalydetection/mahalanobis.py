@@ -7,8 +7,8 @@ from sklearn import preprocessing
 # import matplotlib.pyplot as plt
 
 from numpy.random import seed
-from tensorflow.python.keras import backend as K
-from tensorflow import set_random_seed
+from tensorflow.keras import backend as K
+# from tensorflow import set_random_seed
 
 from keras.layers import Input, Dropout
 from keras.layers.core import Dense 

@@ -45,13 +45,13 @@ def insert(request):
         myfile = request.FILES['docfile']
         data_test_value = request.POST['data_test_value']
         data_test_value = float("0."+str(data_test_value))
+
         try:
             os.remove(os.path.join(MEDIA_ROOT, myfile.name))
         except:
             pass
-        fs = FileSystemStorage()
+
         filename = fs.save(myfile.name, myfile)
-        uploaded_file_url = fs.url(filename)           
         final_data = main(myfile.name, data_test_value)    
         
         for loop, data in enumerate(final_data.Anomaly):
@@ -108,7 +108,13 @@ def insert(request):
             
         with open(os.path.join(DATA_DIR, 'anomaly.json'),'r+') as anomalyjson:
             anomalyjson.write(str(anomaly))
-        # return render(request, 'base/mahalanobis/chart.html')     
+        # return render(request, 'base/mahalanobis/chart.html') 
+        return render(request, 'base/mahalanobis/index.html', {'data':str(abpmean), 
+                                                                'data_table':datay,
+                                                                'data_percentage_test': data_test_value,
+                                                                'data_anomaly': data_anomaly,
+                                                                'data_final': final_data.to_html(classes= 'table table-responsive table-bordered table-stripped')})
+                                                                # 'data_final': final_data})    
     else:
         open(os.path.join(DATA_DIR, 'mob_dist.json'),'w').close()
         open(os.path.join(DATA_DIR, 'thresh.json'),'w').close()
@@ -120,9 +126,4 @@ def insert(request):
         open(os.path.join(DATA_DIR, 'anomaly.json'),'w').close()
         
         print("++AA++A")     
-    return render(request, 'base/mahalanobis/index.html', {'data':str(abpmean), 
-                                                           'data_table':datay,
-                                                           'data_percentage_test': data_test_value,
-                                                           'data_anomaly': data_anomaly,
-                                                           'data_final': final_data.to_html(classes= 'table table-responsive table-bordered table-stripped')})
-            
+        return render(request, 'base/mahalanobis/index.html')
