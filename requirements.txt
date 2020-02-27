@@ -17,7 +17,7 @@ Counter==1.0.0
 cycler==0.10.0
 decorator==4.4.0
 defusedxml==0.6.0
-Django==2.2.4
+Django==2.2.10
 entrypoints==0.3
 enum34==1.1.8
 falcon==2.0.0
