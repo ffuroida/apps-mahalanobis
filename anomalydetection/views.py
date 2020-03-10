@@ -90,7 +90,7 @@ def insert(request):
                 data = list(data.split(","))
                 temp = {"time":data[0],"abpmean":data[1],"hr":data[2],"pulse":data[3],"resp":data[4],"spo2":data[5],"kelas":data[6].replace("\r\n","")}
                 datay.append({"s1":data[0].replace('"','').replace("'",""),"s2":data[1],"s3":data[2], "s4":data[3], "s5":data[4], "s6":data[5],"s7":data[6].replace('\\r\\n"','') }) #Cara 1
-                datay.append(temp)                     
+                # datay.append(temp)                     
                 times = data[0].replace('"','').replace("'","")
                 times = datetime.strptime(times, "%H:%M:%S %d/%m/%Y")            
                 times = times.timetuple()            
@@ -129,10 +129,12 @@ def insert(request):
 
             # return render(request, 'base/mahalanobis/chart.html') 
         else:
-            datay = smoreg(myfile.name)  
-            xa = {'time': list(datay.time), 'abpmean': list(datay.ABPmean), 'pulse': list(datay.PULSE), 'hr': list(datay.HR), 'resp': list(datay.RESP), 'spo2': list(datay.SpO2), 'class': list(datay['class'])}            
-            print(datay['time'])
-            data_smoreg = datay.to_html(classes= 'table table-responsive table-bordered table-stripped')
+            temp = smoreg(myfile.name)            
+            # xa = {'time': list(datay.time), 'abpmean': list(datay.ABPmean), 'pulse': list(datay.PULSE), 'hr': list(datay.HR), 'resp': list(datay.RESP), 'spo2': list(datay.SpO2), 'class': list(datay['class'])}            
+            
+            # data_smoreg = datay.to_html(classes= 'table')
+            for index, row in temp.iterrows():
+                datay.append({'time': str(row['time']), 'abpmean': row['ABPmean'], 'pulse': row['PULSE'], 'hr': row['HR'], 'resp': row['RESP'], 'spo2': row['SpO2'], 'class': row['class']})
         return render(request, 'base/mahalanobis/index.html', {'data':str(abpmean), 
                                                                 'data_table':datay,
                                                                 'data_percentage_test': data_test_value,

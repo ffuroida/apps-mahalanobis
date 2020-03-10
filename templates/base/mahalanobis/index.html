@@ -27,7 +27,7 @@
     {% csrf_token %}
     <label>Tambahkan Data : <input class="input-field" type="file" name="docfile" id="docfile"> </label>
     <br>
-    <label>Masukkan Nilai Data Tes<input class="input-field" type="number"  max="8" name="data_test_value" required></label>
+    <label>Masukkan Nilai Data Tes<input class="input-field" type="number"  max="8" name="data_test_value" ></label>
     <br>
     <input list="metode" name="browser">
     <select name="metode">
@@ -68,12 +68,11 @@
                 </tr>
             </thead>
         </table>
-    </div>
-
+    </div>            
     <div class="table100-body js-pscroll">
         <table>
-            <tbody>
-                {% for display in data_table %}
+            <tbody>                
+                {% for display in data_table %}                
                 <tr>
                     <td class="cell100 column1">{{ display.s1 }} {{ display.time }}</td>
                     <td class="cell100 column2">{{ display.s2 }} {{ display.abpmean }}</td>
@@ -114,7 +113,7 @@
 <script>
     var seriesOptions = [],
         seriesCounter = 0,
-        names = ['THRESH', 'MOB_DIST'];
+        names = ['ABPMEAN', 'HR', 'PULSE', 'RESP', 'SPO2'];
 
     /**
      * Create the chart when all data is loaded
@@ -137,7 +136,8 @@
 
             rangeSelector: {
                 selected: 0,
-                inputEnabled: false
+                // inputEnabled: false
+                inputDateFormat: '%Y-%m-%d'
 
             },
             xAxis: {
@@ -182,7 +182,7 @@
     }
 
     function success(data) {
-        var name = this.url.match(/(thresh|mob_dist)/)[0].toUpperCase();
+        var name = this.url.match(/(abpmean|hr|pulse|resp|spo2)/)[0].toUpperCase();
         var i = names.indexOf(name);
         seriesOptions[i] = {
             name: name,
@@ -199,11 +199,23 @@
     }
 
     Highcharts.getJSON(
-        '{% static "assets/data/thresh.json" %}',
+        '{% static "assets/data/abpmean.json" %}',
         success
     );
     Highcharts.getJSON(
-        '{% static "assets/data/mob_dist.json" %}',
+        '{% static "assets/data/hr.json" %}',
+        success
+    );
+    Highcharts.getJSON(
+        '{% static "assets/data/pulse.json" %}',
+        success
+    );  
+    Highcharts.getJSON(
+        '{% static "assets/data/resp.json" %}',
+        success
+    );  
+    Highcharts.getJSON(
+        '{% static "assets/data/spo2.json" %}',
         success
     );  
 </script>
