@@ -1,0 +1,308 @@
+{% extends "partial/base.html" %}
+
+{% block header %}
+<h2><span>Anomaly</span> Detection</h2>
+{% endblock header %}
+
+{% block tittle-nav %}
+<p></p>
+{% endblock tittle-nav %}
+
+{% block content %}
+<p> Outlier adalah suatu data yang menyimpang dari sekumpulan data yang lain, Ferguson ( 1961)</p><br>
+<p>Outlier adalah pengamatan yang tidak mengikuti sebagian besar pola dan terletak jauh dari pusat data, Barnett (1981)</p>
+{% endblock content %}
+
+{% block content-form %}
+<!-- <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %} -->
+<!-- <input type="text" name="nama"> -->
+<!-- {{ form.as_table}}
+    <button type="submit" > submit</button>
+    </form>                        -->
+
+<div class="form-style-3">
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label>Tambahkan Data : <input class="input-field" type="file" name="docfile" id="docfile"> </label>
+    <br>
+    <label>Masukkan Nilai Data Tes<input class="input-field" type="number"  max="8" name="data_test_value" ></label>
+    <br>
+    <input list="metode" name="browser">
+    <select name="metode">
+    <option value="distance">distance</option>
+    <option value="smoreg">smoreg</option>
+    </select>
+    <button type="submit">Submit</button>
+</form>
+</div>
+
+<!-- <div class="form-style-3">
+    
+    <form action="" method="post" enctype="multipart/form-data>
+        {% csrf_token %}
+      <label for="field1"><span>Tambahkan File <span class="required">*</span></span><input type="file" class="input-field" name="docfile" id="docfile" /></label>
+      <label for="field3"><span>Nilai Data Tes <span class="required">*</span></span><input type="number" class="input-field" max="8" name="data_test_value" required /></label>
+      <!-- <label for="field4"><span>Pilih Metode</span><select name="field4" class="select-field">
+      <option value="mahalanobis">Mahalanobis Distance</option>
+      <option value="smoreg">SMOReg</option>
+    </select></label> -->
+    <!-- <button type="submit">Submit</button>
+    </form>
+</div> --> 
+
+<br><br><br>
+<div class="table100 ver1 m-b-110">
+    <div class="table100-head">
+        <table>
+            <thead>
+                <tr class="row100 head">
+                    <th class="cell100 column1">Time</th>
+                    <th class="cell100 column2">ABPmean</th>
+                    <th class="cell100 column3">Pulse</th>
+                    <th class="cell100 column4">HR</th>
+                    <th class="cell100 column5">Respirasi</th>
+                    <th class="cell100 column6">SPO2</th>
+                    <th class="cell100 column7">Class</th>
+                </tr>
+            </thead>
+        </table>
+    </div>            
+    <div class="table100-body js-pscroll">
+        <table>
+            <tbody>                
+                {% for display in data_table %}                
+                <tr>
+                    <td class="cell100 column1">{{ display.s1 }} {{ display.time }}</td>
+                    <td class="cell100 column2">{{ display.s2 }} {{ display.abpmean }}</td>
+                    <td class="cell100 column3">{{ display.s3 }} {{ display.pulse }}</td>
+                    <td class="cell100 column4">{{ display.s4 }} {{ display.hr }}</td>
+                    <td class="cell100 column5">{{ display.s5 }} {{ display.resp }}</td>
+                    <td class="cell100 column6">{{ display.s6 }} {{ display.spo2 }}</td>
+                    <td class="cell100 column7">{{ display.s7  }} {{ display.class }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- {{ data }} -->
+{{ times }}
+{% endblock content-form%}
+
+{% block content-chart %}
+{% load static %}
+<!-- <script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+<div id="container" style="height: 400px; min-width: 310px"></div> -->
+
+{{ data_final | safe }}
+
+{{ data_smoreg | safe }}
+
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+<div id="container" style="height: 400px; min-width: 310px"></div>
+<hr>
+<div id="container2" style="height: 10px; min-width: 310px"></div>
+
+<script>
+    var seriesOptions = [],
+        seriesCounter = 0,
+        names = ['ABPMEAN', 'HR', 'PULSE', 'RESP', 'SPO2'];
+
+    /**
+     * Create the chart when all data is loaded
+     * @returns {undefined}
+     */
+    function createChart() {
+
+        Highcharts.stockChart('container', {
+            title: {
+                text: 'Data Anomaly'
+            },
+
+            time: {
+                timezone: 'Asia/Jakarta'
+            },
+
+            subtitle: {
+                text: 'Source: data test {{ data_percentage_test }}%'
+            },
+
+            chart: {
+                zoomType: null
+            },
+
+           
+            xAxis: {
+                labels: {
+                    enabled: true,
+                    formatter: function() { return Highcharts.dateFormat('%H:%M:%S %d/%m/%Y', this.value);},
+                },
+                plotLines: [
+                    {% for data in data_anomaly %}
+                        {% if data.anomaly == False %}
+                            {
+                                value: {{ data.index }},
+                                width:1,
+                                color: 'red',                                
+                            },
+                        {% endif %}
+                    {% endfor %}
+                ],   
+                    
+            },
+            yAxis: {
+                labels: {
+                    formatter: function () {
+                        return this.value;
+                    }
+                },                
+            },
+
+            plotOptions: {
+                series: {
+                    showInNavigator: true
+                }
+            },
+
+            tooltip: {
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b><br/>',
+                valueDecimals: 2,
+                split: true
+            },
+
+            series: seriesOptions
+        });
+    }
+
+    function success(data) {
+        var name = this.url.match(/(abpmean|hr|pulse|resp|spo2)/)[0].toUpperCase();
+        var i = names.indexOf(name);
+        seriesOptions[i] = {
+            name: name,
+            data: data
+        };
+        
+
+        // As we're loading the data asynchronously, we don't know what order it
+        // will arrive. So we keep a counter and create the chart when all the data is loaded.
+        seriesCounter += 1;
+
+        if (seriesCounter === names.length) {
+            createChart();
+        }
+    }
+    Highcharts.setOptions({
+        time: {
+            timezone: 'Asia/Jakarta'
+        }
+    });
+    Highcharts.getJSON(
+        '{% static "assets/data/abpmean.json" %}',
+        success
+    );
+    Highcharts.getJSON(
+        '{% static "assets/data/hr.json" %}',
+        success
+    );
+    Highcharts.getJSON(
+        '{% static "assets/data/pulse.json" %}',
+        success
+    );  
+    Highcharts.getJSON(
+        '{% static "assets/data/resp.json" %}',
+        success
+    );  
+    Highcharts.getJSON(
+        '{% static "assets/data/spo2.json" %}',
+        success
+    );  
+</script>
+{% endblock content-chart %}
+
+{% block coba-content %}
+    <h2 class="pricing-section__title">Analisa</h2>
+    <div class="pricing pricing--tenzin">
+        <div class="col-md-3">
+            <h3 class="pricing__title">True Positif</h3>
+            <div class="pricing__price">{{ data_tp }}</div>
+            <p class="pricing__sentence"></p>
+            <ul class="pricing__feature-list">
+                <li class="pricing__sentence">True Positif adalah kondisi saat output program menyatakan positif anomali dan pada kondisi sebenarnya juga positif anomali. </li>
+            </ul>
+        </div>
+        <div class="col-md-3">
+            <h3 class="pricing__title">False Positif</h3>
+            <div class="pricing__price">{{ data_fp }}</div>
+            <p class="pricing__sentence"></p>
+            <ul class="pricing__feature-list">
+                <li class="pricing__sentence">False Positif adalah kondisi saat output program menyatakan positif anomali tetapi pada kondisi sebenarnya negatif anomali. </li>
+            </ul>
+        </div>
+        <div class="col-md-3">
+            <h3 class="pricing__title">True Negative</h3>
+            <div class="pricing__price">{{ data_tn }}</div>
+            <p class="pricing__sentence"></p>
+            <ul class="pricing__feature-list">
+                <li class="pricing__sentence">True Negative adalah kondisi saat output program menyatakan negatif anomali dan pada kondisi sebenarnya juga negatif anomali.    
+                    Tabel </li>
+            </ul>
+        </div>   
+        <div class="col-md-3">
+            <h3 class="pricing__title">False Negative</h3>
+            <div class="pricing__price">{{ data_fn }}</div>
+            <p class="pricing__sentence"></p>
+            <ul class="pricing__feature-list">
+                <li class="pricing__sentence">False Negative adalah kondisi saat output program menyatakan negatif anomali tetapi pada kondisi sebenarnya positif anomali.</li>
+            </ul>
+        </div>   
+        <div class="col-md-3">
+        <h3 class="pricing__title">Detection Rate :</h3> <p class="pricing__price">{{ DetectRate }} </p>
+        </div>
+        <div class="col-md-3">
+        <h3 class="pricing__title">False Positive Rate :</h3> <p class="pricing__price">{{ fpr }} </p>
+        </div>
+        <div class="col-md-3">
+        <h3 class="pricing__title">Root Mean Square Error :</h3> <p class="pricing__price">{{ rmse }} </p>
+        </div>
+{% endblock coba-content %}
+
+{% block content-confusion %}
+<!-- <div class="table100 ver1 m-b-110">
+    <div class="table100-head">
+        <table>
+            <thead>
+                <tr class="row100 head">
+                    <th class="cell100 column5">True Negatif</th>
+                    <th class="cell100 column2">False Positif</th>
+                    <th class="cell100 column3">False Negative</th>
+                    <th class="cell100 column4">True Positif</th>
+                    <th class="cell100 column5">DR</th>
+                    <th class="cell100 column6">FPR</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    <div class="table100-body js-pscroll">
+        <table>
+            <tbody>
+                <tr>
+                    <td>{{ data_tn }}</td>
+                    <td>{{ data_fp }}</td>
+                    <td>{{ data_fn }}</td>
+                    <td>{{ data_tp }}</td>
+                    <td>{{ DetectRate }}</td>
+                    <td>{{ fpr }}</td>        
+                </tr>
+            </tbody>
+        </table>
+        {{rmse}}
+    </div>
+</div> -->
+{% endblock content-confusion %}
