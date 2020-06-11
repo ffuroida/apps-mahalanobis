@@ -1,0 +1,129 @@
+{% load static %}
+<!DOCTYPE HTML>
+
+ <html>
+
+    <head>
+
+    	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+        <meta charset="utf-8">
+
+        <!-- Description, Keywords and Author -->
+
+        <meta name="description" content="">
+
+        <meta name="author" content="">
+
+        <title>Anomaly Detection</title>
+
+		<link rel="shortcut icon" href="{% static "images/favicon.ico" %}" type="image/x-icon">
+
+        {% include "partial/style.html" %}
+
+	</head>
+
+    <body>    
+        
+    	<!-- header -->
+
+        	<header role="header">
+
+            	<div class="container">
+
+                	<!-- logo -->
+
+                    	<h1>
+
+                        	<a href="{% static "index.html" %}" title="avana LLC"><img src="{% static "images/logo.png" %}" title="avana LLC" alt="avana LLC"/></a>
+
+                        </h1>
+
+                    <!-- logo -->
+                    {% include "partial/navbar.html" %} 
+                               
+                </div>
+
+            </header>
+
+        <!-- header -->
+
+        <!-- main -->
+
+        <main role="main-inner-wrapper" class="container">
+
+            <div class="row">            
+
+            	<section class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ">
+
+                	<article role="pge-title-content">
+
+                    	<header>
+
+                            {% block header %}
+
+                            {% endblock header %}
+
+                        </header>
+
+                            {% block tittle-nav %}
+                            
+                            {% endblock tittle-nav %}
+
+                    </article>
+
+                </section>    
+
+                <section class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+
+                	<article class="about-content">
+
+                    	{% block content %}
+                            
+                        {% endblock content %}
+
+                    </article>
+
+                </section>
+                <div class="dropdown">
+
+                <div class="clearfix"></div>
+
+                <!-- thumbnails -->
+
+                	<div class="thumbnails-pan">
+                        {% block content-form %}
+                            
+                        {% endblock content-form %}
+
+                    </div>
+
+                <!-- thumbnails -->
+
+            </div>
+
+            {% block content-chart %}
+                            
+            {% endblock content-chart %}
+
+            <section class="pricing-section bg-11">
+                {% block coba-content %}
+                        
+                {% endblock coba-content %}
+            </section>
+
+            {% block content-confusion %}
+    
+            {% endblock content-confusion %}
+
+        </main>
+
+        <!-- main -->
+        
+        {% include "partial/footer.html" %}
+
+        {% include "partial/jquery.html" %}
+
+    </body>
+
+</html>
